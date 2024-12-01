@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,13 +22,23 @@ public class CompanySearchService {
 
     private static final String X_API_KEY_NAME = "x-api-key";
 
+    private static Logger logger = Logger.getLogger("CompanySearchService");
+
     @Autowired
     private RestTemplateBuilder restTemplateBuilder;
 
     public CompanySearchResult searchCompanies(CompanySearch companySearch) {
 
+        logger.info("Retrieving company details");
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(getHttpHeaders());
-        ResponseEntity<CompanySearchResult> response = restTemplateBuilder.build().exchange("https://exercise.trunarrative.cloud/TruProxyAPI/rest/Companies/v1/Search?Query=companies", HttpMethod.GET, request, CompanySearchResult.class);
+        Map<String, String> params = new HashMap<String, String>();
+        if (StringUtils.hasText(companySearch.getCompanyNumber())) {
+            params.put("search_term", companySearch.getCompanyNumber());
+        }
+        if (StringUtils.hasText(companySearch.getCompanyName())) {
+            params.put("search_term", companySearch.getCompanyName());
+        }
+        ResponseEntity<CompanySearchResult> response = restTemplateBuilder.build().exchange("https://exercise.trunarrative.cloud/TruProxyAPI/rest/Companies/v1/Search?Query={search_term}", HttpMethod.GET, request, CompanySearchResult.class, params);
         if (response.hasBody() && response.getBody().getTotalResults() > 0) {
             //filter companies based on companyId or companyName match and also active status
             List<Company> filteredCompanies = response.getBody().getCompanies().stream().
@@ -41,6 +52,7 @@ public class CompanySearchService {
     }
 
     public OfficerSearchResult searchOfficersByCompany(String companyNumber) {
+        logger.info("Retrieving officer details for company number: " + companyNumber);
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(getHttpHeaders());
         Map<String, String> params = new HashMap<String, String>();
         params.put("CompanyNumber", companyNumber);

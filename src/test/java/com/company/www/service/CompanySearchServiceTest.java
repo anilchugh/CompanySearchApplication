@@ -26,8 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 
 @SpringBootTest(properties = "apiKey=API_KEY")
 @AutoConfigureMockMvc
@@ -58,7 +57,7 @@ class CompanySearchServiceTest {
     void setup() {
         SecurityContextHolder.getContext().setAuthentication(new ApiKeyAuthentication("API_KEY", AuthorityUtils.NO_AUTHORITIES));
         Mockito.when(restTemplateBuilder.build()).thenReturn(restTemplate);
-        Mockito.when(restTemplate.exchange(eq("https://exercise.trunarrative.cloud/TruProxyAPI/rest/Companies/v1/Search?Query=companies"), eq(HttpMethod.GET), any(HttpEntity.class), eq(CompanySearchResult.class))).thenReturn(companySearchResponseEntity);
+        Mockito.when(restTemplate.exchange(startsWith("https://exercise.trunarrative.cloud/TruProxyAPI/rest/Companies/v1/Search?Query"), eq(HttpMethod.GET), any(HttpEntity.class), eq(CompanySearchResult.class), any(Map.class))).thenReturn(companySearchResponseEntity);
         Mockito.when(restTemplate.exchange(eq("https://exercise.trunarrative.cloud/TruProxyAPI/rest/Companies/v1/Officers?CompanyNumber={CompanyNumber}"), eq(HttpMethod.GET), any(HttpEntity.class), eq(OfficerSearchResult.class), any(Map.class))).thenReturn(officerSearchResponseEntity);
         Mockito.when(companySearchResponseEntity.hasBody()).thenReturn(true);
         Mockito.when(companySearchResponseEntity.getBody()).thenReturn(getCompanySearchResult());
@@ -68,7 +67,7 @@ class CompanySearchServiceTest {
 
     @Test
     void searchCompaniesWithCompanyNameAndNumberSuccess() throws Exception {
-        CompanySearch companySearch = new CompanySearch("COMPANY_NAME_2", "COMPANY_ID_2");
+        CompanySearch companySearch = new CompanySearch("COMPANY_NAME_2", "COMPANY_ID_2", true);
         CompanySearchResult companySearchResult = companySearchService.searchCompanies(companySearch);
         Assertions.assertEquals(1, companySearchResult.getTotalResults());
         Assertions.assertEquals("COMPANY_ID_2", companySearchResult.getCompanies().get(0).getCompanyNumber());
@@ -95,7 +94,7 @@ class CompanySearchServiceTest {
 
     @Test
     void searchCompaniesWithCompanyNameOnlySuccess() throws Exception {
-        CompanySearch companySearch = new CompanySearch("COMPANY_NAME_1", null);
+        CompanySearch companySearch = new CompanySearch("COMPANY_NAME_1", null, true);
         CompanySearchResult companySearchResult = companySearchService.searchCompanies(companySearch);
         Assertions.assertEquals(1, companySearchResult.getTotalResults());
         Assertions.assertEquals("COMPANY_ID_1", companySearchResult.getCompanies().get(0).getCompanyNumber());
@@ -108,13 +107,13 @@ class CompanySearchServiceTest {
     void searchCompaniesWithNoMatchFound() throws Exception {
         Mockito.when(companySearchResponseEntity.hasBody()).thenReturn(false);
         Mockito.when(companySearchResponseEntity.getBody()).thenReturn(null);
-        CompanySearch companySearch = new CompanySearch("COMPANY_NAME_0", null);
+        CompanySearch companySearch = new CompanySearch("COMPANY_NAME_0", null, true);
         Assertions.assertNull(companySearchService.searchCompanies(companySearch));
     }
 
     @Test
     void searchForNonActiveCompanyWithMatchFound() throws Exception {
-        CompanySearch companySearch = new CompanySearch("COMPANY_NAME_3", "COMPANY_ID_3");
+        CompanySearch companySearch = new CompanySearch("COMPANY_NAME_3", "COMPANY_ID_3", true);
         companySearch.setActive(false);
         CompanySearchResult companySearchResult = companySearchService.searchCompanies(companySearch);
         Assertions.assertEquals(1, companySearchResult.getTotalResults());
@@ -126,7 +125,7 @@ class CompanySearchServiceTest {
 
     @Test
     void searchForActiveCompanyWithNoMatchFound() throws Exception {
-        CompanySearch companySearch = new CompanySearch("COMPANY_NAME_3", "COMPANY_ID_3");
+        CompanySearch companySearch = new CompanySearch("COMPANY_NAME_3", "COMPANY_ID_3", true);
         companySearch.setActive(true);
         CompanySearchResult companySearchResult = companySearchService.searchCompanies(companySearch);
         Assertions.assertNotNull(companySearchResult);

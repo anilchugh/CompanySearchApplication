@@ -42,7 +42,7 @@ class CompanySearchControllerTest {
 
     @Test
     void searchCompaniesWithoutApiToken() throws Exception {
-        CompanySearch companySearch = new CompanySearch("COMPANY_NAME", "COMPANY_ID");
+        CompanySearch companySearch = new CompanySearch("COMPANY_NAME", "COMPANY_ID", true);
         mockMvc.perform(
                 post("/www.company.com/search")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -53,7 +53,7 @@ class CompanySearchControllerTest {
 
     @Test
     void searchCompaniesSucceedsWithApiToken() throws Exception {
-        CompanySearch companySearch = new CompanySearch("COMPANY_NAME", "COMPANY_ID");
+        CompanySearch companySearch = new CompanySearch("COMPANY_NAME", "COMPANY_ID", true);
         mockMvc.perform(
                 post("/www.company.com/search")
                         .header("x-api-key", "API_KEY")
@@ -65,7 +65,7 @@ class CompanySearchControllerTest {
 
     @Test
     void searchActiveCompaniesSucceedsWithApiToken() throws Exception {
-        CompanySearch companySearch = new CompanySearch("COMPANY_NAME", "COMPANY_ID");
+        CompanySearch companySearch = new CompanySearch("COMPANY_NAME", "COMPANY_ID", true);
         mockMvc.perform(
                 post("/www.company.com/search")
                         .header("x-api-key", "API_KEY")
@@ -78,7 +78,7 @@ class CompanySearchControllerTest {
 
     @Test
     void searchCompaniesSucceedsWithMissingCompanyName() throws Exception {
-        CompanySearch companySearch = new CompanySearch(null, "COMPANY_ID");
+        CompanySearch companySearch = new CompanySearch(null, "COMPANY_ID", true);
         String error = mockMvc.perform(
                 post("/www.company.com/search")
                         .header("x-api-key", "API_KEY")
