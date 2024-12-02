@@ -35,7 +35,7 @@ public class CompanySearchService {
         if (StringUtils.hasText(companySearch.getCompanyNumber())) {
             params.put("search_term", companySearch.getCompanyNumber());
         }
-        if (StringUtils.hasText(companySearch.getCompanyName())) {
+        else if (StringUtils.hasText(companySearch.getCompanyName())) {
             params.put("search_term", companySearch.getCompanyName());
         }
         ResponseEntity<CompanySearchResult> response = restTemplateBuilder.build().exchange("https://exercise.trunarrative.cloud/TruProxyAPI/rest/Companies/v1/Search?Query={search_term}", HttpMethod.GET, request, CompanySearchResult.class, params);
